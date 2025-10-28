@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
   <meta charset="utf-8">
@@ -7,8 +7,8 @@
     content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
 
   <!-- Replace with your own title and description. -->
-  <title>Awesome Docsify Site</title>
-  <meta name="description" content="An awesome docsify site for publishing some content on the web.">
+  <title>Root-None Blog</title>
+  <meta name="description" content="Personal Blog.">
 
   <!-- Default Theme (see https://docsify.js.org/#/themes) -->
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
@@ -16,26 +16,32 @@
 </head>
 
 <body>
-  <div id="app"></div>
+  <div id="app">Loading...</div>
 
   <script>
     // Docsify Configuration (see https://docsify.js.org/#/configuration)
     window.$docsify = {
-      name: 'Simple Docsify Template',
+      name: 'Contents',
 
       // Sidebar Configuration
       auto2top: true,
       loadSidebar: true,
       maxLevel: 0,
+      alias: {
+        '/.*/_sidebar.md': '/_sidebar.md'
+      },
       // Set subMaxLevel to 0 to remove automatic display of page table of contents (TOC) in Sidebar
-      subMaxLevel: 3,
+      subMaxLevel: 2,
+
+      // Navbar Configuration
+      loadNavbar: true,
 
       // Search Plugin Configuration
       search: {
         placeholder: 'Type to search',
-        noData: 'No matches found.',
+        noData: '找不到相关结果',
         // Headline depth, 1 - 6
-        depth: 2,
+        depth: 3,
       }
     };
   </script>

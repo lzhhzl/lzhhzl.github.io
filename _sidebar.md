@@ -1,2 +1,3 @@
-- [Read Me](README)
-- [Example Second Page](second-page)
+- [首页](README.md)
+- [笔记](second-page.md "Notes Test")
+- [Docsify Template Desc](Docsify_Template_Desc.md)
