@@ -32,7 +32,7 @@
 
 另外关于更老一点的Unity版本可能会用到的CustomFont，[这篇文章](https://www.bilibili.com/opus/914075886494416905)也有详细的解决方法，其原理和结构与本次案例中的TTF UGUI RAW数据很相似，但是多出了对Material和Texture两个指针指向文件的提取和修改过程，感兴趣的朋友也可以了解一下。
 
-另外，由于AssetStudio原仓库已停止维护，这里也列出来两个个人认为比较好用的近期还在维护的AssetStudio：
+另外，由于AssetStudio原仓库已停止维护，这里也列出来两个个人认为比较好用的近期还在更新维护的AssetStudio项目：
 
 > https://github.com/aelurum/AssetStudio</br>https://github.com/zhangjiequan/AssetStudio
 
