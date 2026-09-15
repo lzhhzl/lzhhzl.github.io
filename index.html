@@ -10,16 +10,15 @@
   <title>Root-None Blog</title>
   <meta name="description" content="Personal Blog.">
 
-  <!-- Default Theme (see https://docsify.js.org/#/themes) -->
-  <link rel="stylesheet" title="light" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
-  <link rel="stylesheet" title="dark" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/dark.css">
-
-  <!-- insert custom css  -->
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-dark-switch/dist/docsify-dark-switch.css">
+  <!-- Core Theme (see https://docsify.js.org/#/themes) -->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@5/dist/themes/core.min.css">
+  <!-- Optional: Dark Mode Support -->
+  <link id="docsify-dark-theme" rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@5/dist/themes/addons/core-dark.min.css" disabled>
+  <!-- <link rel="stylesheet" title="dark" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/dark.css"> -->
 
 </head>
 
-<body>
+<body class="loading sidebar-group-underline sidebar-toggle-chevron">
   <div id="app">Loading...</div>
 
   <script>
@@ -61,14 +60,16 @@
   </script>
 
   <!-- Required -->
-  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@5/dist/docsify.min.js"></script>
 
   <!-- Recommended -->
-  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@5/dist/plugins/zoom-image.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@5/dist/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/docsify-updated/src/time-updater.js"></script>
-  <!-- Dark Mode Switch Plugin(github.com/markz-demo/docsify-dark-switch) -->>
-  <script src="//cdn.jsdelivr.net/npm/docsify-dark-switch/dist/docsify-dark-switch.min.js"></script>
+  <!-- Dark Theme Switch-->
+  <script src="theme-switch.js"></script>
+  <!-- Discard: Dark Mode Switch Plugin(https://github.com/markz-demo/docsify-dark-switcher) -->
 
 </body>
 </html>
