@@ -1,10 +1,10 @@
-# 标题
+# 基于Steins;Gate psv汉化分析的Mages 科学系汉化学习
 
-端午期间看到了石头门新作的消息，想起来25年趁着周年纪念促销购买的石头门本篇steam版在库里吃灰，于是决定入坑玩玩，但平时工作通勤都比较繁忙、还是想在一个较为便携的设备上本地游玩，自己也没有类似steamdeck这样比较方便的pc系统掌机，想起psv的本篇还没汉化，于是决定自己试着移植pc官中到psv、顺便入门学习一下Mages家科学系引擎的汉化方法。
+端午期间看到了石头门新作的消息，想起来25年趁着周年纪念在steam促销购买的石头门本篇还在库里吃灰，于是决定入坑玩玩，但平时工作通勤都比较繁忙、还是想在一个较为便携的设备上本地游玩，自己也没有类似steamdeck这样比较方便的pc系统掌机，想起psv的本篇还没汉化，于是决定自己试着移植pc官中到psv、顺便入门学习一下Mages家科学系引擎的汉化方法。
 
 ## 1.游戏文件内容与封包格式分析
 
-其实到26年的今天，Mages的科学系列的游戏引擎分析和汉化制作工具都已经相当成熟了，在PC端也有国外大佬组织[Committee of Zero](https://sonome.dareno.me/)制作的各种历史项目和文档可供学习研究了，PC端的分析就简单介绍一下。这里推荐一下B站up主**暮光暗愈者**的这篇文章[MAGES引擎游戏资源提取方法指北](https://www.bilibili.com/opus/782595981330874391)，里面将过往大部分Mages游戏涉及到的素材格式和使用引擎及相关分析工具等信息都进行了总结，个人觉得是入门了解学习Mages游戏构成的一篇比较好的文章。
+其实到26年的今天，Mages的科学系列的游戏引擎分析和汉化制作工具都已经相当成熟了，在PC端也有国外大佬组织[Committee of Zero](https://sonome.dareno.me/)制作的各种历史项目和文档可供学习研究了，PC端的分析就简单介绍一下。这里推荐一下B站up主**暮光暗愈者**的这篇文章[MAGES引擎游戏资源提取方法指北](https://www.bilibili.com/opus/782595981330874391)，里面将过往大部分Mages游戏涉及到的素材格式和使用引擎及相关分析工具等信息都进行了总结，个人觉得算是入门了解学习Mages游戏构成的一篇比较好的文章。
 
 从steamdb可以查到，石头门Steam版的各个语言版本是独立的，咱在国区下的版本就直接是简体中文版了，由于剧情脚本里主机平台的指令多少可能与pc平台有差异，为了能对照比较psv的日文原文素材，这里也是有必要通过不同的Depot ID下载Steam的日文版。</br>![sg steamdb](../../_media/notes/mages/sg_steamdb.png)</br><p align="center"><em>吐槽一下Steam版怎么还区分个No language和日文版</em></p>
 
@@ -20,13 +20,13 @@ Steam简中的游戏文件内容如下图，steam日文版的游戏文件也是�
 
 psv版的游戏文件内容如下:</br>![sg_psv游戏文件](../../_media/notes/mages/sg_psv_gamefiles.png)</br>与PC Steam版不同的是，由于年代较早且开发链的不同，psv版的封包使用的是CRIWARE通用的CPK封包，这种封包格式过去也有很多大佬解析并制作过开箱即用的工具了，这里暂时使用的是</br>SpriteLisen大佬的[CriPakTools-GUI](https://github.com/SpriteLisen/CriPakTools-GUI) 和 另一个大佬的[YACpkTool](https://github.com/Brolijah/YACpkTool)。
 
-CPK封包中的文件是有附带文件名信息封包和无文件名信息(Nameless)封包两种方式的，在对system1、script1、bg1、chara、movie1等封包尝试解包后，发现只有movie1封包是保留有文件名信息的。通过CriPakTools尝试CPK拆包、也能正常得到和MPK封包中文件数相差无几的一系列文件。但是使用CriPakTools试着封包并做rePatch运行后，发现游戏会直接卡在启动界面没法运行下去、甚至连崩溃都没有：</br>![sg_psv错误CPK封包运行卡住](../../_media/notes/mages/error_cpk_stuck.png)</br>怀疑可能是封包中有数据没做对？打开hex编辑器对比一看，发现是CPK头部数据magic之后的4字节和TOC数据区块magic之后的4字节原先都是0x00000000、但重新生成的封包相同位置的4字节是0xFF000000：</br>![CriPakTools封包差异](../../_media/notes/mages/CriPakTools_repack_diff.png)</br>重新将这4字节修改为0x00000000即可让游戏正常读取运行，但比较麻烦的是后续在重新封包movie1.cpk发现还有ITOC、ETOC数据块开头magic后的4字节都要对应修改，老是这样用CriPakTools重新封包好又一处处寻找修改那4字节也挺麻烦的，本文在后续 [拓展：CPK资源封包的另一种方法](#拓展cpk资源封包的另一种方法) 部分将会分析提出一种更方便准确的方法去实现官方CPK的封包解包。
+CPK封包中的文件是有附带文件名信息封包和无文件名信息(Nameless)封包两种方式的，在对system1、script1、bg1、chara、movie1等封包尝试解包后，发现只有movie1封包是保留有文件名信息的。通过CriPakTools尝试CPK拆包、也能正常得到和MPK封包中文件数相差无几的一系列文件。但是使用CriPakTools试着封包并做rePatch运行后，发现游戏会直接卡在启动界面没法运行下去、甚至连崩溃都没有：</br>![sg_psv错误CPK封包运行卡住](../../_media/notes/mages/error_cpk_stuck.png)</br>怀疑可能是封包中有数据没做对？打开hex编辑器对比一看，发现是CPK头部数据magic之后的4字节和TOC数据区块magic之后的4字节原先都是0x00000000、但重新生成的封包相同位置的4字节是0xFF000000：</br>![CriPakTools封包差异](../../_media/notes/mages/CriPakTools_repack_diff.png)</br>重新将这4字节修改为0x00000000即可让游戏正常读取运行，但比较麻烦的是后续在重新封包movie1.cpk发现还有ITOC、ETOC数据块开头magic后的4字节都要对应修改，老是这样用CriPakTools重新封包好又一处处寻找修改那4字节也挺麻烦的，本文在后续 [拓展：CPK资源封包的另一种方法](#拓展：cpk资源封包的另一种方法) 部分将会分析提出一种更方便准确的方法去实现官方CPK的封包解包。
 
 ## 2.字库和文本的分析
 
 在wetor大佬发布的[石头门0汉化补丁博客](https://blog.wetor.org/posts/SG0CN/)的评论区处通过fl0w1nd大佬对switch石头门汉化的评论交流可以得知、石头门的图片格式字库通常在system包内，那就拆解psv的system1.cpk看看，发现其中98%是GXT magic的无文件名图像纹理文件，剩下id为59的文件应该是系统存档所需文件的小封包、id为62的文件对应steam版的system包内文件来看应该是`WAVTABLE.DAT`音频相关数据文件、故暂且不管它们。GXT图像文件的大致结构可查看[psdevwiki这里](https://www.psdevwiki.com/vita/index.php/GXT)，通常可以使用老牌工具[Scarlet](https://github.com/xdanieldzd/Scarlet)将大部分纹理格式的GXT转换为PNG，转换后得到以下图片素材：</br>![system1内gxt转png](../../_media/notes/mages/system1_gxt2png.png)</br>可以发现id为10和11的图片就是我们所需的图片字库：</br>![system1图片字库](../../_media/notes/mages/system1_font.png)
 
-找到了字库，就要找到文本及文本与字符的映射关系了。通过fl0w1nd大佬的评论和Committee of Zero的[gitbooks文档](https://committeeofzero.gitbooks.io/mages-engine-compendium/content/scripting/strings.html)可得知、不同于通常文字游戏引擎会直接读取脚本中的明文并根据编码转换创建映射逻辑去字库取字，Mages的科学系引擎是直接将字符编码按顺序逐个编码为了0x8000开始的无符号2字节大端整数，而这些整数通常一一对应图片字库中从上到下从左到右的每一个字符、甚至包括空出来位置也是标识为一个字符，这也是以往PC上用于重建该引擎字库图片工具[mgsfontgen-dx](https://github.com/CommitteeOfZero/mgsfontgen-dx)的基本构建逻辑。从[mgsfontgen-dx](https://github.com/CommitteeOfZero/mgsfontgen-dx)工具的使用示例和源代码大致了解到，制作一个图片字库通常需要Charset.utf8和CompoundCharacters.tbl：</br>![Charset和CompoundCharacters](../../_media/notes/mages/Charset_and_CompoundCharacters.png)</br>Charset.utf8其实是一个存储着所有图片字库中出现的字符的utf8编码文本，但图片字库中还存在着诸如：</br>
+既然找到了字库，接着就要找到文本及文本与字符的映射关系了。通过fl0w1nd大佬的评论和Committee of Zero的[compendium文档](https://committeeofzero.gitbooks.io/mages-engine-compendium/content/scripting/strings.html)可得知、不同于通常文字游戏引擎会直接读取脚本中的明文并根据编码转换创建映射逻辑去字库取字，Mages的科学系引擎是直接将字符编码按顺序逐个编码为了0x8000开始的无符号2字节大端整数，而这些整数通常一一对应图片字库中从上到下从左到右的每一个字符、甚至包括空出来位置也是标识为一个字符，这也是以往PC上用于重建该引擎字库图片工具[mgsfontgen-dx](https://github.com/CommitteeOfZero/mgsfontgen-dx)的基本构建逻辑。从[mgsfontgen-dx](https://github.com/CommitteeOfZero/mgsfontgen-dx)工具的使用示例和源代码大致了解到，制作一个图片字库通常需要Charset.utf8和CompoundCharacters.tbl：</br>![Charset和CompoundCharacters](../../_media/notes/mages/Charset_and_CompoundCharacters.png)</br>Charset.utf8其实是一个存储着所有图片字库中出现的字符的utf8编码文本，但图片字库中还存在着诸如：</br>
 - 图片显示为空但仍占一个字符位的“空”字符
 - 部分无法轻易用单字符表示出来的特殊复合组成字符，如`¹⁸`、`キタ`、`(ﾉ`等
 - 少数可能是宽距字符（视觉上占两个字母）或只有全角没找到半角表示的日文字符
@@ -56,9 +56,9 @@ public enum SceGxmTextureSwizzle1Mode : ushort
 
 U8_R111 = SceGxmTextureBaseFormat.U8 | SceGxmTextureSwizzle1Mode.R111
 ```
-从常量名字面意思看就是只有一个8位红色通道值、其他GBA三个通道默认都处理为全255的单通道纹理数据，但这里有一个坑，当我用python Pillow查看Scarlet转换出来的图像字库PNG时，发现其实只有A通道是有纹理实际值、而RGB通道都是全255的，猜测可能是Scarlet直接将R111按照ARGB的纹理顺序保存为PNG，所以在生成psv可用的其他GXT字库前需要抽取的是RGBA PNG的A通道的值而不是R通道的值，好在Steam版的FONT.PNG也是同样的只有A通道有字形的实际值、且RGB通道都是全255。这里我的做法是先将降了分辨率的Steam日文字库FONT.PNG通过GIMP(Photoshop之类的工具也可以)保存为无压缩的A8格式DDS，之后通过psv官方SDK中的psp2gxt（可以在[这里](https://www.reddit.com/r/VitaPiracy/comments/c8m37s/release_psvita_sdk_3570_devnet_files/)找到）将这个A8 DDS先保存为LINEAR GXT：</br>![GIMP A8 DDS to GXT](../../_media/notes/mages/GIMP_A8_DDS_to_GXT.png)</br>可以看到新生成的test.gxt对比原先的字库gxt的Texture Base Format差别只是0x34~0x37为`00 60 00 00`(U8_R000)，但存储的纹理和原先的U8_R111都是相同的uint8 单通道字形纹理数据，故我们只需要将新生成的GXT的0x34~0x37重新改为`00 70 00 00`、0x18也顺便改为0x01，即可制作出psv可用的U8_R111 GXT字库文件。通过repatch放回psv进行测试可以看到换上新日文字库的正常乱码效果：</br>![psv用PC日文字库效果](../../_media/notes/mages/psv_use_pcjp_fonts.png)
+从常量名字面意思看就是只有一个8位红色通道值、其他GBA三个通道默认都处理为全255的单通道纹理数据，但这里有一个坑，当我用python Pillow查看Scarlet转换出来的图像字库PNG时，发现其实只有A通道是有纹理实际值、而RGB通道都是全255的，猜测可能是Scarlet直接将R111按照ARGB的纹理顺序保存为PNG，所以在生成psv可用的其他GXT字库前需要抽取的是RGBA PNG的A通道的值而不是R通道的值，好在Steam版的FONT.PNG也是同样的只有A通道有字形的实际值、且RGB通道都是全255。这里我的做法是先将降了分辨率的Steam日文字库FONT.PNG通过GIMP(Photoshop之类的工具也可以)保存为无压缩的A8格式DDS，之后通过psv官方SDK中的psp2gxt（可以在[这里](https://www.reddit.com/r/VitaPiracy/comments/c8m37s/release_psvita_sdk_3570_devnet_files/)找到）将这个A8 DDS先保存为LINEAR GXT：</br>![GIMP A8 DDS to GXT](../../_media/notes/mages/GIMP_A8_DDS_to_GXT.png)</br>可以看到新生成的test.gxt对比原先的字库gxt的Texture Base Format差别只是0x34\~0x37为`00 60 00 00`(U8_R000)，但存储的纹理和原先的U8_R111都是相同的uint8 单通道字形纹理数据，故我们只需要将新生成的GXT的0x34\~0x37重新改为`00 70 00 00`、0x18也顺便改为0x01，即可制作出psv可用的U8_R111 GXT字库文件。通过repatch放回psv进行测试可以看到换上新日文字库的正常乱码效果：</br>![psv用PC日文字库效果](../../_media/notes/mages/psv_use_pcjp_fonts.png)
 
-确定了Steam版的字库可以缩分辨率直接用到psv后，接着就到了文本。很明显psv的脚本文件都在script1.cpk中，拆开可以得到一堆文件头为SC3的无文件名文件，根据Committee of Zero的gitbooks文档对[SC3文件格式](https://committeeofzero.gitbooks.io/mages-engine-compendium/content/scripting/scx_file_format.html)的描述可以得知SC3文件结构大致如下：
+确定了Steam版的字库可以缩分辨率直接用到psv后，接着就到了文本。很明显psv的脚本文件都在script1.cpk中，拆开可以得到一堆文件头为SC3的无文件名文件，根据Committee of Zero的compendium文档对[SC3文件格式](https://committeeofzero.gitbooks.io/mages-engine-compendium/content/scripting/scx_file_format.html)的描述可以得知SC3文件结构大致如下：
 ```
 char[4] SC3\0
 
@@ -85,7 +85,7 @@ License: GPL-3.0
 
 Warning: 字库可能缺少 [B5 83] 对应的字符！
 ```
-但是psv script1中id为0的SC3文件、对应Steam版的`_ATCH.SCX`文件却是能正常转换出文本，好奇对比了script1 id0和`_ATCH.SCX`文件导出的文本内容后发现MagesTools在转换psv SC3文本内容时很明显把0x04开头的指令内容解析错了、疑似导致吞掉了后面跟着的字符：</br>![指令解析异常吞字符](../../_media/notes/mages/MagesTools_old_error.png)</br>没办法只好翻Magestool的部分源码看看，了解到源码中 [NpcsFormat.go](https://github.com/wetor/MagesTools/blob/master/script/format/NpcsFormat.go#L50) 和 [NpcsPFormat.go](https://github.com/wetor/MagesTools/blob/master/script/format/NpcsPFormat.go#L55) 的DecodeLine函数对文本中SetColor(0x04)指令的处理在psv平台上的SC3出了问题：
+但是psv script1中id为0的SC3文件、对应Steam版的`_ATCH.SCX`文件却是能正常转换出文本，好奇对比了script1 id0脚本和`_ATCH.SCX`文件导出的文本内容后发现MagesTools在转换psv SC3文本内容时很明显把0x04开头的指令内容解析错了、疑似导致吞掉了后面跟着的字符：</br>![指令解析异常吞字符](../../_media/notes/mages/MagesTools_old_error.png)</br>没办法只好翻Magestool的部分源码看看，了解到源码中 [NpcsFormat.go](https://github.com/wetor/MagesTools/blob/master/script/format/NpcsFormat.go#L50) 和 [NpcsPFormat.go](https://github.com/wetor/MagesTools/blob/master/script/format/NpcsPFormat.go#L55) 的DecodeLine函数对文本中SetColor(0x04)指令的处理在psv平台上的SC3出了问题：
 ```
 NpcsFormat.go  #55:
 case SetColor:
@@ -107,7 +107,7 @@ MagesTools_win.exe -debug=2 -skip=false -format=NpcsP -type=script -import -tbl=
 
 字库也跑通了，文本也能修改了，于是便换上降分辨率的Steam中文字库和替换了中文文本的序章SC3脚本文件放入封包进行repatch测试，没想到游戏又卡在了一开始的启动界面、进都进不去，明明前面封包和SC3文本的导入都测试成功了呀、试着换上了Steam日文制作的字库后又能进去了，而且psv上的这mages引擎程序运行出了读取素材等异常问题还偏偏不报错崩溃丢psp2dump、就一直在那里卡着，一时半会也搞不清这回是哪里出了问题、头大 /(ㄒoㄒ)/。
 
-之后猜测游戏程序内的错误处理应该是打印了常规log而并非崩溃，通常实机要看log可能要用到远程调试器，但也可以用vita3k运行试试，虽然vita3k没法正常运行游玩psv石头门本篇，但是却刚好能走完整个初始化流程，运行了之前有问题的中文字库补丁终于发现了问题`texture buffer is too small(syatem(10)) vram 00300000 tex 00480000`所在：</br>![vita3k font error](../../_media/notes/mages/vita3k_font_error.png)</br>从报错内容可以大致推断出程序留给字库图像纹理的vram大小只有0x00300000，而我制作的中文字库纹理大小却达到了0x00480000，而原先分辨率为`3072*3456`的中文字库图像降了分辨率后也有着`2048*2304`，结合我之前提到本作字库图像GXT存储的字形纹理数据实际只有单通道的纹理数据，即刚好可计算得出`2048*2304*1=0x480000`，故反推出程序设定的vram只能载入`0x300000=2048*1536*1`分辨率大小的纹理，`"这得要砍掉不少字符，先生".jpg`。
+之后猜测游戏程序内的错误处理应该是打印了常规log而并非崩溃，通常实机要看log可能要用到远程调试器，但也可以用vita3k运行试试，虽然vita3k没法正常运行游玩psv石头门本篇，但是却刚好能走完整个初始化流程，运行了之前有问题的中文字库补丁终于发现了问题`texture buffer is too small(syatem(10)) vram 00300000 tex 00480000`所在：</br>![vita3k font error](../../_media/notes/mages/vita3k_font_error.png)</br>从报错内容可以大致推断出程序留给字库图像纹理的vram大小只有0x00300000，而我制作的中文字库纹理大小却达到了0x00480000，而原先分辨率为`3072*3456`的中文字库图像降了分辨率后也有着`2048*2304`，结合我之前提到本作字库图像GXT存储的字形纹理数据实际只有单通道的纹理数据，即刚好可计算得出`2048*2304*1=0x480000`，故反推出程序设定的vram只能载入`0x300000=2048*1536*1`分辨率大小的纹理，**"这得要砍掉不少字符，先生".jpg**。
 
 此时看来只有两个选择，要么将Steam中文的字库自行缩减到刚好能用`2048*1536`分辨率的字库图装下，要么就只能逆向主程序eboot找到并修改对应vram的大小设置。如果要考虑前者缩减字库所用字符的方案，就意味着我要把中文字库用到的约4566个字符缩减到大约3072个字符及以下，这1500多个要删减的字符就算是把日文、特殊字符和部分符号全删可能也不够。还是决定花点时间逆向eboot找找相关逻辑试试。由于我本身并不擅长逆向、对arm的汇编语法和相关寄存器结构也没有完全掌握，我选用结合AI的帮助方案尝试辅助整个逆向理解过程，这里我用到的分析工具是Ghidra和插件[VitaLoaderRedux](https://github.com/CreepNT/VitaLoaderRedux)和AI agent可用的[GhidraMCP](https://github.com/LaurieWired/GhidraMCP)工具。另外还需要提取解密NNP版eboot并转化为elf，通常可以用[FAGDec](https://github.com/TeamFAPS/PSVita-RE-tools/tree/master/FAGDec)提取解密并直接转换为elf，具体操作方法之后我可能会写在另一篇博客里，这里暂不过多赘述。接下来用ghidra分析eboot elf的过程大致如下：
 
@@ -500,7 +500,7 @@ Not the entire script body is loaded at once. Instead, currently required script
 
 并非整个脚本体一次性加载。目前，所需脚本会被加载到脚本缓冲区中。运行时首先会加载启动脚本（例如 _Startup_win.scx）后续所需的脚本则在运行时通过 LoadScript 指令加载。
 ```
-再结合ID2脚本的第一个出现的ScriptLoad指令`ScriptLoad 1, 3`来看，此时该指令应该载入ID3脚本来进行加载，继续decompile script ID3并在opcode内容中搜索字库vram的两个宽高值，终于找到了其中的两个`CreateAlphaSurface 78, 2048, 1536`和`CreateAlphaSurface 79, 2048, 1536`</br>![Id3_opcode](../../_media/notes/mages/)</br>能大概看出来第一个参数应该是Surface ID，后两个就是预设的宽高值，其opcode格式是
+再结合ID2脚本的第一个出现的ScriptLoad指令`ScriptLoad 1, 3`来看，此时该指令应该载入ID3脚本来进行加载，继续decompile script ID3并在opcode内容中搜索字库vram的两个宽高值，终于找到了其中的两个`CreateAlphaSurface 78, 2048, 1536`和`CreateAlphaSurface 79, 2048, 1536`</br>![Id3_opcode](../../_media/notes/mages/script_id3_opcode.png)</br>能大概看出来第一个参数应该是Surface ID，后两个就是预设的宽高值，其opcode格式是
 ```
 - pattern: 01 00 00
   name: CreateAlphaSurface
@@ -851,7 +851,7 @@ if pixelFormat == 8 and unKnow==2:
 2. [new-criware-sdk xx-Version](https://archive.org/details/new-criware-sdk) 一个于23年留存在Internet Archive的公开Criware SDK。
 3. [Autodesk-Scaleform-GFx-SDK](https://github.com/Final-Game-Production-Inc/Autodesk-Scaleform-GFx-SDK) Autodesk Scaleform, A 3A Game UI Designing With Adobe Animate Or Adobe Flash, Audio For FMOD & WWISE, And Sofdec2 For Video.
 
-其中的Scaleform VideoEncoder作为Criware推出的官方工具，我也下载来尝试了一下、确实能制作出USM视频、但缺陷是只能制作出1920*1080等标准大分辨率的格式视频，基本上无法做出psv、psp时代那种小分辨率的视频，多用于PC、PS4时期等大型游戏的视频制作。遂尝试下载了new-criware-sdk来碰碰运气，通过CRIWARE_SDK_v2_19_03_PC安装并放入许可证 Crack后惊喜的发现、其中Tools不仅涵盖了CRI官方的ADX2音频处理工具和Sofdec2视频处理套件工具，还留有了crifilesystem的封包查看和制作工具。打开Sofdec2EncWiz发现PlayStation Vita平台的制作选项刚好位列其中：</br>![Sofdec2EncWiz psv platform](../../_media/notes/mages/Sofdec2EncWiz_platform.png)</br>于是便着手尝试用Steam版1920x1080的bk2转mp4的视频素材进行转换制作，需要注意的是由于psv上的USM视频素材是960x544这种非标准16:9的分辨率、而1920x1080这种标准16:9的视频貌似并不适合直接强硬缩放拉伸到960x544这个大小，所以在使用ffmpeg进行缩放的过程中我使用了-vf "scale=960:544:force_original_aspect_ratio=decrease,pad=960:544:(ow-iw)/2:(oh-ih)/2"这个黑边填充参数以缩小适应到不标准的960x544比例，其次在Sofdec2的Video配置中我选用了H.264 Video Codec，虽然大部分的mod制作例子中都提到了VP9，但制作psv平台的视频时选用这个参数工具就会提示`VP9 video codec is supported for Standard, Swtich, iOS and Android platforms. Select platform supported VP9 video codec.`并强制退到其他可用的Codec。</br>![make psv usm](../../_media/notes/mages/make_usm.png)</br>之后的选项都是保持默认，一路按到Encoding界面、点击Start启动转换，等待成功后用Sofdec2Viewer打开得到的USM视频，成功播放出视频和音频。</br>![play psv usm](../../_media/notes/mages/)</br>
+其中的Scaleform VideoEncoder作为Criware推出的官方工具，我也下载来尝试了一下、确实能制作出USM视频、但缺陷是只能制作出1920*1080等标准大分辨率的格式视频，基本上无法做出psv、psp时代那种小分辨率的视频，多用于PC、PS4时期等大型游戏的视频制作。遂尝试下载了new-criware-sdk来碰碰运气，通过CRIWARE_SDK_v2_19_03_PC安装并放入许可证 Crack后惊喜的发现、其中Tools不仅涵盖了CRI官方的ADX2音频处理工具和Sofdec2视频处理套件工具，还留有了crifilesystem的封包查看和制作工具。打开Sofdec2EncWiz发现PlayStation Vita平台的制作选项刚好位列其中：</br>![Sofdec2EncWiz psv platform](../../_media/notes/mages/Sofdec2EncWiz_platform.png)</br>于是便着手尝试用Steam版1920x1080的bk2转mp4的视频素材进行转换制作，需要注意的是由于psv上的USM视频素材是960x544这种非标准16:9的分辨率、而1920x1080这种标准16:9的视频貌似并不适合直接强硬缩放拉伸到960x544这个大小，所以在使用ffmpeg进行缩放的过程中我使用了-vf "scale=960:544:force_original_aspect_ratio=decrease,pad=960:544:(ow-iw)/2:(oh-ih)/2"这个黑边填充参数以缩小适应到不标准的960x544比例，其次在Sofdec2的Video配置中我选用了H.264 Video Codec，虽然大部分的mod制作例子中都提到了VP9，但制作psv平台的视频时选用这个参数工具就会提示`VP9 video codec is supported for Standard, Swtich, iOS and Android platforms. Select platform supported VP9 video codec.`并强制退到其他可用的Codec。</br>![make psv usm](../../_media/notes/mages/make_usm.png)</br>之后的选项都是保持默认，一路按到Encoding界面、点击Start启动转换，等待成功后用Sofdec2Viewer打开得到的USM视频，成功播放出视频和音频。</br>![play psv usm](../../_media/notes/mages/play_usm.png)</br>
 
 ## 拓展：CPK资源封包的另一种方法
 
